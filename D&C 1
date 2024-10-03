@@ -1,0 +1,61 @@
+#include <stdio.h>
+#include <stdbool.h>
+
+int minusOneCount = 0;  // -1로만 채워진 종이의 개수
+int zeroCount = 0;      // 0으로만 채워진 종이의 개수
+int oneCount = 0;       // 1로만 채워진 종이의 개수
+
+// 주어진 영역이 모두 같은 숫자인지 확인하는 함수
+bool isSameNumber(int paper[][2187], int startX, int startY, int size) {
+    int firstValue = paper[startX][startY];
+    for (int i = startX; i < startX + size; i++) {
+        for (int j = startY; j < startY + size; j++) {
+            if (paper[i][j] != firstValue) {
+                return false;  // 다른 숫자가 있으면 false 반환
+            }
+        }
+    }
+    return true;  // 모두 같은 숫자라면 true 반환
+}
+
+// 분할 정복 함수
+void dnc_papers(int paper[][2187], int startX, int startY, int size) {
+    // degenerate case: 해당 영역이 모두 같은 숫자인 경우
+    if (isSameNumber(paper, startX, startY, size)) {
+        int firstValue = paper[startX][startY];
+        if (firstValue == -1) minusOneCount++;
+        else if (firstValue == 0) zeroCount++;
+        else if (firstValue == 1) oneCount++;
+        return;
+    }
+
+    // divide: 9개의 작은 영역으로 나누기
+    int newSize = size / 3;
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            dnc_papers(paper, startX + i * newSize, startY + j * newSize, newSize);
+        }
+    }
+}
+
+int main() {
+    int N;
+    scanf("%d", &N);
+
+    int paper[2187][2187];  // 최대 크기 2187x2187
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+            scanf("%d", &paper[i][j]);  // 종이의 값 입력
+        }
+    }
+
+    // 분할 정복 함수 호출
+    dnc_papers(paper, 0, 0, N);
+
+    // 결과 출력
+    printf("%d\n", minusOneCount);
+    printf("%d\n", zeroCount);
+    printf("%d\n", oneCount);
+
+    return 0;
+}
