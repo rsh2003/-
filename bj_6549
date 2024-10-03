@@ -1,0 +1,75 @@
+#include <stdio.h>
+#include <stdlib.h>
+#define _CRT_SECURE_NO_WARNINGS
+#define MAX_SIZE 100000
+
+typedef struct {
+    int* data;
+    int top;
+} Stack;
+
+// 스택 초기화
+void initStack(Stack* stack) {
+    stack->data = (int*)malloc(MAX_SIZE * sizeof(int));
+    stack->top = -1;
+}
+
+// 스택에 인덱스를 추가
+void push(Stack* stack, int index) {
+    stack->data[++(stack->top)] = index;
+}
+
+// 스택에서 인덱스를 제거하고 반환
+int pop(Stack* stack) {
+    return stack->data[(stack->top)--];
+}
+
+// 스택이 비어있는지 확인
+int isEmpty(Stack* stack) {
+    return stack->top == -1;
+}
+
+// 최대 직사각형 넓이 계산
+long long largestRectangleArea(int heights[], int n) {
+    Stack stack;
+    initStack(&stack);
+    long long maxArea = 0;
+    int i;
+
+    // 높이 배열의 끝에 0을 추가
+    heights[n] = 0;
+
+    for (i = 0; i <= n; i++) {
+        while (!isEmpty(&stack) && heights[stack.data[stack.top]] > heights[i]) {
+            int h = heights[pop(&stack)];
+            int w = (isEmpty(&stack)) ? i : i - stack.data[stack.top] - 1;
+            long long area = (long long)h * w;
+            if (area > maxArea) {
+                maxArea = area;
+            }
+        }
+        push(&stack, i);
+    }
+
+    free(stack.data);
+    return maxArea;
+}
+
+int main() {
+    int heights[MAX_SIZE + 1];  // 최대 100,000개의 높이 저장
+    int n;
+
+    while (1) {
+        scanf("%d", &n);
+        if (n == 0) {
+            break;
+        }
+        for (int i = 0; i < n; i++) {
+            scanf("%d", &heights[i]);
+        }
+        long long maxArea = largestRectangleArea(heights, n);
+        printf("%lld\n", maxArea);
+    }
+
+    return 0;
+}
