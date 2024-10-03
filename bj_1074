@@ -1,0 +1,27 @@
+#include <stdio.h>
+
+int z_order(int N, int r, int c) {
+    if (N == 0) {  // Base case for N = 0 (2x2 array)
+        return 0;
+    }
+
+    int half_size = 1 << (N - 1);  // 2^(N-1)
+    
+    // Determine which quadrant (r, c) is in
+    if (r < half_size && c < half_size) {  // Top-left
+        return z_order(N - 1, r, c);
+    } else if (r < half_size && c >= half_size) {  // Top-right
+        return (half_size * half_size) + z_order(N - 1, r, c - half_size);
+    } else if (r >= half_size && c < half_size) {  // Bottom-left
+        return (2 * half_size * half_size) + z_order(N - 1, r - half_size, c);
+    } else {  // Bottom-right
+        return (3 * half_size * half_size) + z_order(N - 1, r - half_size, c - half_size);
+    }
+}
+
+int main() {
+    int N, r, c;
+    scanf("%d %d %d", &N, &r, &c);
+    printf("%d\n", z_order(N, r, c));
+    return 0;
+}
