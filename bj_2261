@@ -1,0 +1,88 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <cmath>
+#include <limits>
+
+using namespace std;
+
+struct Point {
+    int x, y;
+};
+
+// 거리의 제곱을 계산하는 함수
+int distanceSquared(const Point& p1, const Point& p2) {
+    return (p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y);
+}
+
+// 가장 가까운 두 점을 찾는 재귀 함수
+int closestPair(const vector<Point>& pointsX, const vector<Point>& pointsY) {
+    int n = pointsX.size();
+    if (n <= 3) {
+        int minDist = numeric_limits<int>::max();
+        for (int i = 0; i < n; ++i) {
+            for (int j = i + 1; j < n; ++j) {
+                minDist = min(minDist, distanceSquared(pointsX[i], pointsX[j]));
+            }
+        }
+        return minDist;
+    }
+
+    int mid = n / 2;
+    Point midPoint = pointsX[mid];
+
+    vector<Point> leftY, rightY;
+    for (const auto& point : pointsY) {
+        if (point.x <= midPoint.x) {
+            leftY.push_back(point);
+        }
+        else {
+            rightY.push_back(point);
+        }
+    }
+
+    int d1 = closestPair(vector<Point>(pointsX.begin(), pointsX.begin() + mid), leftY);
+    int d2 = closestPair(vector<Point>(pointsX.begin() + mid, pointsX.end()), rightY);
+    int d = min(d1, d2);
+
+    vector<Point> strip;
+    for (const auto& point : pointsY) {
+        if ((point.x - midPoint.x) * (point.x - midPoint.x) < d) {
+            strip.push_back(point);
+        }
+    }
+
+    for (size_t i = 0; i < strip.size(); ++i) {
+        for (size_t j = i + 1; j < strip.size() && (strip[j].y - strip[i].y) * (strip[j].y - strip[i].y) < d; ++j) {
+            d = min(d, distanceSquared(strip[i], strip[j]));
+        }
+    }
+
+    return d;
+}
+
+int main() {
+    int n;
+    cin >> n;
+    vector<Point> points(n);
+    for (int i = 0; i < n; ++i) {
+        cin >> points[i].x >> points[i].y;
+    }
+
+    // x좌표에 따라 정렬
+    vector<Point> pointsX = points;
+    sort(pointsX.begin(), pointsX.end(), [](const Point& a, const Point& b) {
+        return a.x < b.x;
+        });
+
+    // y좌표에 따라 정렬
+    vector<Point> pointsY = points;
+    sort(pointsY.begin(), pointsY.end(), [](const Point& a, const Point& b) {
+        return a.y < b.y;
+        });
+
+    int result = closestPair(pointsX, pointsY);
+    cout << result << endl;
+
+    return 0;
+}
