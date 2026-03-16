@@ -1,0 +1,59 @@
+크롤링 코드 짜드릴게요.
+
+```python
+import requests
+from bs4 import BeautifulSoup
+import json
+import time
+
+CHARACTERS = {
+    'ginto': 'https://gintama.fandom.com/wiki/Gintoki_Sakata/Quotes',
+    'hiji':  'https://gintama.fandom.com/wiki/Toshiro_Hijikata/Quotes',
+    'sogo':  'https://gintama.fandom.com/wiki/Sogo_Okita/Quotes',
+}
+
+headers = {'User-Agent': 'Mozilla/5.0'}
+
+def crawl_quotes(char_id, url):
+    res = requests.get(url, headers=headers)
+    soup = BeautifulSoup(res.text, 'html.parser')
+    
+    quotes = []
+    # fandom wiki는 대사를 <i> 또는 <li> 태그에 넣음
+    for tag in soup.select('li, blockquote'):
+        text = tag.get_text(strip=True)
+        if len(text) > 10 and len(text) < 200:  # 너무 짧거나 긴 거 제외
+            quotes.append({
+                'character': char_id,
+                'text': text,
+                'lang': 'en'  # 영어 먼저 수집
+            })
+    
+    return quotes[:75]  # 캐릭터당 75개
+
+all_data = []
+for char_id, url in CHARACTERS.items():
+    print(f'{char_id} 수집 중...')
+    quotes = crawl_quotes(char_id, url)
+    all_data.extend(quotes)
+    print(f'  {len(quotes)}개 수집 완료')
+    time.sleep(1)  # 서버 부하 방지
+
+# 저장
+with open('gintama_quotes_raw.json', 'w', encoding='utf-8') as f:
+    json.dump(all_data, f, ensure_ascii=False, indent=2)
+
+print(f'\n총 {len(all_data)}개 수집 완료')
+print('gintama_quotes_raw.json 저장됨')
+```
+
+---
+
+Colab에서 실행하면 돼요. 순서는
+
+1. Colab 새 노트북 열기
+2. 첫 셀에 `!pip install beautifulsoup4 requests`
+3. 두 번째 셀에 위 코드 붙여넣기
+4. 실행
+
+수집 후 json 파일 저장되면 저한테 올려줘요. 그러면 제가 한국어 번역 + paraphrase 증강 작업 같이 해드릴게요.
